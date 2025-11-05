@@ -143,6 +143,15 @@
                                         <i class="fas fa-edit mr-1"></i>
                                         Editar
                                     </button>
+
+                                    <button class="delete-supplier-btn text-red-600 hover:text-red-900 transition-colors duration-200 px-3 py-1 border border-red-600 rounded-lg text-sm"
+                                        data-product-supplier-id="{{ ps.id }}"
+                                        data-supplier-name="{{ ps.supplier.name }}"
+                                        data-key-supplier="{{ ps.key_supplier }}"
+                                        data-cost="{{ ps.cost }}">
+                                        <i class="fas fa-trash mr-1"></i>
+                                        Eliminar
+                                    </button>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
@@ -271,6 +280,76 @@
         </div>
     </div>
 
+    <div id="deleteSupplierModal" style="display: none;" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 relative transform transition-all">
+            <div class="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 rounded-full mb-4">
+                <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+            </div>
+            
+            <h2 class="text-xl font-semibold text-gray-800 text-center mb-2">
+                ¿Eliminar Proveedor?
+            </h2>
+            
+            <p class="text-gray-600 text-center mb-6">
+                Esta acción no se puede deshacer. El proveedor será eliminado permanentemente de este producto.
+            </p>
+            
+            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                <div class="flex items-start">
+                    <i class="fas fa-truck text-gray-400 mt-1 mr-3"></i>
+                    <div class="flex-1">
+                        <p class="text-sm text-gray-500 mb-1">Proveedor</p>
+                        <p class="font-medium text-gray-900" id="supplierNameConfirm"></p>
+                    </div>
+                </div>
+                <div class="flex items-start mt-3">
+                    <i class="fas fa-key text-gray-400 mt-1 mr-3"></i>
+                    <div class="flex-1">
+                        <p class="text-sm text-gray-500 mb-1">Clave Producto</p>
+                        <p class="font-mono text-gray-900" id="supplierKeyConfirm"></p>
+                    </div>
+                </div>
+                <div class="flex items-start mt-3">
+                    <i class="fas fa-dollar-sign text-gray-400 mt-1 mr-3"></i>
+                    <div class="flex-1">
+                        <p class="text-sm text-gray-500 mb-1">Costo</p>
+                        <p class="font-medium text-gray-900" id="supplierCostConfirm"></p>
+                    </div>
+                </div>
+            </div>
+            
+            <form method="post" id="deleteSupplierForm">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="delete_supplier">
+                <input type="hidden" name="product_supplier_id" id="deleteProductSupplierId">
+                
+                <div class="flex gap-3">
+                    <button type="button" id="cancelDeleteSupplierBtn" 
+                            class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-colors font-medium">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="confirmDeleteSupplierBtn" 
+                            class="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors font-medium">
+                        <i class="fas fa-trash mr-2"></i>Sí, Eliminar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        #deleteSupplierModal .bg-white {
+            transform: scale(0.95);
+            opacity: 0;
+            transition: all 0.2s ease-out;
+        }
+        
+        body.modal-open-delete > *:not(#deleteSupplierModal) {
+            filter: blur(3px);
+            transition: filter 0.2s ease-out;
+        }
+    </style>
+
     <style>
         #supplierModal .bg-white {
             transform: scale(0.95);
@@ -285,5 +364,6 @@
     </style>
 
     <script src="{% static 'app/js/product-detail.js' %}"></script>
+    <script src="{% static 'app/js/delete-supplier.js' %}"></script>
 </body>
 </html>
