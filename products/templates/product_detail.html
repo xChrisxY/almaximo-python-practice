@@ -1,0 +1,289 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Producto</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Editar Producto</h1>
+            <p class="text-gray-600">Actualiza la información del producto y sus proveedores</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <form method="post" id="productForm" class="space-y-6">
+                <input type="hidden" name="form_type" value="product">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="id_key" class="block text-sm font-medium text-gray-700 mb-2">
+                            Clave <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" 
+                               id="id_key" 
+                               name="key" 
+                               value="{{ form.key.value|default:'' }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               required>
+                        {% if form.key.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.key.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="id_name" class="block text-sm font-medium text-gray-700 mb-2">
+                            Nombre <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" 
+                               id="id_name" 
+                               name="name" 
+                               value="{{ form.name.value|default:'' }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               required>
+                        {% if form.name.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="id_product_type" class="block text-sm font-medium text-gray-700 mb-2">
+                            Tipo Producto <span class="text-red-500">*</span>
+                        </label>
+                        <select id="id_product_type" 
+                                name="product_type"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            {% for value, label in form.product_type.field.choices %}
+                                <option value="{{ value }}" {% if form.product_type.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.product_type.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.product_type.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="flex items-center">
+                        <div class="flex items-center h-10">
+                            <input type="checkbox" 
+                                   id="id_active" 
+                                   name="active" 
+                                   {% if form.active.value %}checked{% endif %}
+                                   class="h-5 w-5 text-blue-600 rounded focus:ring-blue-500">
+                            <label for="id_active" class="ml-3 text-sm font-medium text-gray-700">
+                                Activo
+                            </label>
+                        </div>
+                    </div>
+
+
+                    <div>
+                        <label for="id_price" class="block text-sm font-medium text-gray-700 mb-2">
+                            Precio <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number" 
+                               id="id_price" 
+                               name="price" 
+                               value="{{ form.price.value|default:'' }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               required>
+                        {% if form.price.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.price.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </form>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-800">Proveedores</h2>
+            </div>
+
+            {% if suppliers %}
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Acciones
+                                </th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Proveedor
+                                </th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Clave Producto
+                                </th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Costo
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200" id="suppliersTableBody">
+                            {% for ps in suppliers %}
+                            <tr class="hover:bg-gray-50 transition-colors duration-150" data-supplier-id="{{ ps.id }}">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <button class="edit-supplier-btn text-blue-600 hover:text-blue-900 transition-colors duration-200 px-3 py-1 border border-blue-600 rounded-lg text-sm"
+                                            data-product-supplier-id="{{ ps.id }}"
+                                            data-supplier-name="{{ ps.supplier.name }}"
+                                            data-supplier-description="{{ ps.supplier.description|default:'' }}"
+                                            data-key-supplier="{{ ps.key_supplier }}"
+                                            data-cost="{{ ps.cost }}">
+                                        <i class="fas fa-edit mr-1"></i>
+                                        Editar
+                                    </button>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-truck text-green-600"></i>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">{{ ps.supplier.name }}</div>
+                                            {% if ps.supplier.description %}
+                                                <div class="text-sm text-gray-500">{{ ps.supplier.description|truncatewords:5 }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900 font-mono">{{ ps.key_supplier }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900">$ {{ ps.cost }}</div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-12">
+                    <div class="mx-auto h-24 w-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-truck text-gray-400 text-3xl"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No hay proveedores registrados</h3>
+                    <p class="text-gray-500 mb-6">Agrega proveedores para este producto.</p>
+                </div>
+            {% endif %}
+
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                <p class="text-sm text-gray-600">
+                    {% if suppliers %}
+                        Mostrando <span class="font-medium">{{ suppliers|length }}</span> proveedores
+                    {% else %}
+                        No hay proveedores registrados
+                    {% endif %}
+                </p>
+                <button 
+                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center"
+                    onclick="abrirModalNuevo()"
+                    type="button"
+                >
+                    <i class="fas fa-plus mr-2"></i>
+                    Agregar Proveedor
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-6 flex justify-end">
+            <button type="submit" 
+                    form="productForm"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 flex items-center text-lg">
+                <i class="fas fa-save mr-2"></i>
+                Guardar Producto
+            </button>
+        </div>
+    </div>
+
+    <div id="supplierModal" style="display: none;" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 relative transform transition-all">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-gray-800" id="modalTitle">Nuevo proveedor</h2>
+                <button type="button" id="closeModalBtn" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
+                    &times;
+                </button>
+            </div>
+            
+            <form method="post" id="supplierForm" class="space-y-4">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" id="formType" value="supplier">
+                <input type="hidden" name="product_supplier_id" id="productSupplierId" value="">
+                
+                <div>
+                    <label for="supplier_name" class="block text-sm font-medium text-gray-700 mb-2">
+                        Proveedor <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" name="name" id="supplier_name" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                           required>
+                </div>
+                
+                <div>
+                    <label for="supplier_description" class="block text-sm font-medium text-gray-700 mb-2">
+                        Descripción
+                    </label>
+                    <textarea name="description" id="supplier_description" 
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                              rows="3"></textarea>
+                </div>
+                
+                <div>
+                    <label for="supplier_key" class="block text-sm font-medium text-gray-700 mb-2">
+                        Clave Producto <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" name="key_supplier" id="supplier_key" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                           required>
+                </div>
+                
+                <div>
+                    <label for="supplier_cost" class="block text-sm font-medium text-gray-700 mb-2">
+                        Costo <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" name="cost" id="supplier_cost" step="0.01" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                           required>
+                </div>
+                
+                <div class="mt-6 flex justify-end gap-3">
+                    <button type="button" id="cancelBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="submitSupplierBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
+                        Guardar
+                    </button>
+                </div>
+            </form>
+            
+            <div id="feedbackMessage" style="display: none;" class="mt-4 p-3 rounded-lg"></div>
+        </div>
+    </div>
+
+    <style>
+        #supplierModal .bg-white {
+            transform: scale(0.95);
+            opacity: 0;
+            transition: all 0.2s ease-out;
+        }
+        
+        body.modal-open > *:not(#supplierModal) {
+            filter: blur(3px);
+            transition: filter 0.2s ease-out;
+        }
+    </style>
+
+    <script src="{% static 'app/js/product-detail.js' %}"></script>
+</body>
+</html>
